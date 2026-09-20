@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Qualeidoscope · complex states, in color</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <aside class="state-sidebar" aria-label="State selection and loading">
+      <header class="brand">
+        <div class="identity"><span class="mark" aria-hidden="true"></span><div><h1>Qualeidoscope</h1><p>Complex states, in color.</p></div></div>
+      </header>
+      <fieldset id="state-controls" disabled>
+        <section class="panel">
+          <h2>State</h2>
+          <label class="file">Open recording<input id="file" type="file" accept=".qls"></label>
+          <p id="source" class="hint">Choose a .qls file from your disk.</p>
+          <fieldset id="frame-controls" disabled>
+            <label class="range-label" for="frame-select">Frame <output id="frame-value">— / —</output></label>
+            <input id="frame-select" type="range" min="0" max="0" value="0" step="1" aria-valuetext="No recording loaded">
+            <div class="playback-buttons">
+              <button id="previous" class="secondary" aria-label="Previous frame" title="Previous frame">←</button>
+              <button id="play" aria-pressed="false">Play</button>
+              <button id="next" class="secondary" aria-label="Next frame" title="Next frame">→</button>
+            </div>
+            <label class="playback-rate" for="fps">Playback speed
+              <select id="fps"><option value="1">1 fps</option><option value="2">2 fps</option><option value="5" selected>5 fps</option><option value="10">10 fps</option><option value="24">24 fps</option><option value="30">30 fps</option></select>
+            </label>
+            <p id="timestamp" class="hint">Time: —</p>
+          </fieldset>
+          <p id="load-status" class="hint" role="status" hidden></p>
+          <p id="status" role="status">Connecting to your GPU…</p>
+        </section>
+      </fieldset>
+    </aside>
+    <section class="visualization" aria-label="State visualization">
+      <div class="view-heading"><div class="view-title"><h2 id="frame-title">Open a recording</h2><p id="dimensions" class="hint"></p></div>
+        <label class="zoom">View <select id="zoom"><option value="fit">Fit</option><option value="1">1× cells</option><option value="2">2× cells</option><option value="4">4× cells</option></select></label></div>
+      <div id="viewport" tabindex="0" role="region" aria-label="Scrollable state canvas">
+        <p id="empty-state">Choose a .qls file in the State panel.<br><span>Demo recordings are in the repo’s examples/ folder.</span></p>
+        <canvas id="canvas" width="1" height="1" aria-label="Complex amplitudes: phase as hue, magnitude as brightness" hidden></canvas>
+      </div>
+      <div id="inspect" class="inspect" tabindex="0" role="region" aria-label="Hovered cell details; scroll horizontally for all columns">
+        <table class="inspection-table" aria-label="Hover over a cell to inspect its amplitude">
+          <colgroup>
+            <col class="inspect-basis-col"><col class="inspect-index-col">
+            <col class="inspect-coordinate-col"><col class="inspect-coordinate-col">
+            <col class="inspect-component-col"><col class="inspect-component-col">
+            <col class="inspect-magnitude-col"><col class="inspect-magnitude-col"><col class="inspect-phase-col">
+          </colgroup>
+          <thead><tr>
+            <th scope="col">Basis state</th><th scope="col">Index</th>
+            <th scope="col">Row</th><th scope="col">Column</th>
+            <th scope="col">Re(a)</th><th scope="col">Im(a)</th>
+            <th scope="col">|a|</th><th scope="col">|a|²</th><th scope="col">Phase</th>
+          </tr></thead>
+          <tbody><tr>
+            <td id="inspect-basis">—</td><td id="inspect-index">—</td>
+            <td id="inspect-row">—</td><td id="inspect-column">—</td>
+            <td id="inspect-real">—</td><td id="inspect-imaginary">—</td>
+            <td id="inspect-magnitude">—</td><td id="inspect-probability">—</td><td id="inspect-phase">—</td>
+          </tr></tbody>
+        </table>
+      </div>
+      <p id="error" role="alert" hidden></p>
+    </section>
+    <aside class="appearance-sidebar" aria-label="Color settings">
+      <section class="panel color-menu" aria-labelledby="phase-key-title">
+        <div class="phase-key">
+        <h2 id="phase-key-title">Phase &amp; magnitude</h2>
+        <div class="phase-wheel-layout">
+          <span class="phase-top">π/2 · +i</span>
+          <span class="phase-left">π · −1</span>
+          <div class="phase-wheel-surface">
+            <canvas id="phase-wheel" width="192" height="192" aria-label="Live color key: phase increases counterclockwise from the right; magnitude increases from zero at the center to the display norm at the rim"></canvas>
+            <span id="wheel-marker" aria-hidden="true" hidden></span>
+          </div>
+          <span class="phase-right">0 · +1</span>
+          <span class="phase-bottom">3π/2 · −i</span>
+        </div>
+        <p class="hint">Center: |a| = 0<br>Rim: |a| = <output id="wheel-norm">1</output> (normalization)</p>
+        <p class="hint">Follows the color controls below.</p>
+        </div>
+      <fieldset id="controls" disabled>
+        <label class="range-label" for="norm">Normalization <output id="norm-value">1</output></label>
+        <div class="slider-track">
+          <input id="norm" type="range" min="0" max="1000" value="500" step="1" aria-describedby="norm-hint">
+          <div id="norm-marks" class="slider-marks" aria-hidden="true"></div>
+        </div>
+          <p id="norm-hint" class="hint">Snaps to 1 and the data peak.</p>
+          <label class="range-label" for="steepness">Amplitude threshold <output id="steepness-value">4</output></label>
+          <div class="slider-track">
+            <input id="steepness" type="range" min="0" max="600" value="400" step="1" aria-valuetext="4, default" aria-describedby="steepness-hint">
+            <div class="slider-marks" aria-hidden="true"><span style="left: 66.666667%" title="Default: 4"></span></div>
+          </div>
+          <p id="steepness-hint" class="hint">Higher values isolate the largest amplitudes.</p>
+          <label class="range-label" for="phase">Global Phase offset <output id="phase-value">0°</output></label>
+          <input id="phase" type="range" min="0" max="360" value="0" step="1">
+          <label class="range-label" for="speed">Animation speed <output id="speed-value">90°/s</output></label>
+          <input id="speed" type="range" min="0" max="180" value="90" step="1" aria-valuetext="90°/s">
+          <p class="hint">A display-only animation; amplitudes stay unchanged.</p>
+      </fieldset>
+      </section>
+    </aside>
+  </main>
+  <script type="module" src="app.js?v=3"></script>
+</body>
+</html>
