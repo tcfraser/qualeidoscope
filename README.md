@@ -31,3 +31,7 @@ write_qls("bell.qls", [
 
 Open `bell.qls` in the viewer. Snap Normalization to the peak to use the full color
 range for small amplitudes; this does not renormalize the state.
+
+## Demo
+
+https://github.com/user-attachments/assets/174c9ff4-20ae-4961-b8ec-6ad34c46c599
