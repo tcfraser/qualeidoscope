@@ -165,8 +165,8 @@ function updateFrameControls() {
   $("play").setAttribute("aria-pressed", String(playing));
   const loading = busy || Boolean(loadTask);
   $("viewport").setAttribute("aria-busy", String(loading));
-  $("load-status").hidden = !loading;
-  $("load-status").textContent = busy ? "Opening recording…" : `Loading frame ${wantedIndex + 1}…`;
+  $("load-status").hidden = !busy;
+  $("load-status").textContent = "Opening recording…";
 }
 
 function pausePlayback() {
